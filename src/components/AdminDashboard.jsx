@@ -153,92 +153,120 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+    <div className="container">
+      <div className="header">
         <h2>Admin Dashboard</h2>
-        <button onClick={handleLogout} style={{ padding: "8px 16px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>Logout</button>
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
 
-      <section style={{ marginBottom: "30px" }}>
+      <div className="card">
         <h3>Create New User</h3>
 
-        <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
-        <br />
-        <br />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" />
-        <br />
-        <br />
-        <select value={newRole} onChange={(e) => setNewRole(e.target.value)}>
-          <option value="ADMIN">Admin</option>
-          <option value="DOCTOR">Doctor</option>
-          <option value="RECEPTIONIST">Receptionist</option>
-        </select>
+        <div className="form-group">
+          <label>Username</label>
+          <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" />
+        </div>
+
+        <div className="form-group">
+          <label>Password</label>
+          <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" />
+        </div>
+
+        <div className="form-group">
+          <label>Role</label>
+          <select value={newRole} onChange={(e) => setNewRole(e.target.value)}>
+            <option value="ADMIN">Admin</option>
+            <option value="DOCTOR">Doctor</option>
+            <option value="RECEPTIONIST">Receptionist</option>
+          </select>
+        </div>
 
         {newRole === "DOCTOR" && (
           <>
-            <br /><br />
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Doctor name" />
-            <br /><br />
-            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" />
-            <br /><br />
-            <input value={specialization} onChange={(e) => setSpecialization(e.target.value)} placeholder="Specialization" />
-            <br /><br />
-            <input value={experience} onChange={(e) => setExperience(e.target.value)} type="number" placeholder="Experience (years)" min="0" />
-            <br /><br />
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone" />
-            <br /><br />
-            <input value={patientsPerHour} onChange={(e) => setPatientsPerHour(e.target.value)} type="number" placeholder="Patients per hour" min="1" />
-            <br /><br />
-            <textarea
-              value={availability}
-              onChange={(e) => setAvailability(e.target.value)}
-              placeholder="Availability entries: MONDAY,09:00,17:00; TUESDAY,09:00,17:00"
-              rows={3}
-              style={{ width: "400px" }}
-            />
+            <div className="form-group">
+              <label>Doctor Name</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Doctor name" />
+            </div>
+
+            <div className="form-group">
+              <label>Email</label>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" />
+            </div>
+
+            <div className="form-group">
+              <label>Specialization</label>
+              <input value={specialization} onChange={(e) => setSpecialization(e.target.value)} placeholder="Specialization" />
+            </div>
+
+            <div className="form-group">
+              <label>Experience (years)</label>
+              <input value={experience} onChange={(e) => setExperience(e.target.value)} type="number" placeholder="Experience (years)" min="0" />
+            </div>
+
+            <div className="form-group">
+              <label>Phone</label>
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone" />
+            </div>
+
+            <div className="form-group">
+              <label>Patients per hour</label>
+              <input value={patientsPerHour} onChange={(e) => setPatientsPerHour(e.target.value)} type="number" placeholder="Patients per hour" min="1" />
+            </div>
+
+            <div className="form-group">
+              <label>Availability</label>
+              <textarea
+                value={availability}
+                onChange={(e) => setAvailability(e.target.value)}
+                placeholder="Availability entries: MONDAY,09:00,17:00; TUESDAY,09:00,17:00"
+                rows={3}
+              />
+            </div>
           </>
         )}
 
-        <br />
-        <button onClick={createUser}>Create User</button>
-      </section>
+        <button className="btn" onClick={createUser}>Create User</button>
+      </div>
 
-      <section style={{ marginBottom: "30px" }}>
+      <div className="card">
         <h3>Users</h3>
         <div>
           {users.map((u) => (
-            <div key={u.id} style={{ border: "1px solid #ccc", marginBottom: "8px", padding: "8px" }}>
+            <div key={u.id} className="card" style={{ marginBottom: "10px" }}>
               <p><b>Username:</b> {u.username}</p>
               <p><b>Role:</b> {u.role}</p>
-              <button onClick={() => deleteUser(u.id)}>Delete</button>
-              <button onClick={() => updateRole(u.id, u.role === "ADMIN" ? "RECEPTIONIST" : "ADMIN")}>Toggle Admin</button>
+              <button className="btn btn-danger" onClick={() => deleteUser(u.id)}>Delete</button>
+              <button className="btn" onClick={() => updateRole(u.id, u.role === "ADMIN" ? "RECEPTIONIST" : "ADMIN")}>Toggle Admin</button>
             </div>
           ))}
         </div>
-      </section>
+      </div>
 
-      <section>
+      <div className="card">
         <h3>Doctors</h3>
         <div>
           {doctors.length === 0 ? (
             <p>No doctors available</p>
           ) : (
             doctors.map((d) => (
-              <div key={d.id} style={{ border: "1px solid #ccc", marginBottom: "8px", padding: "8px" }}>
-                <p><b>{d.name}</b></p>
-                <p>{d.specialization}</p>
-                <p>Email: {d.email}</p>
-                <p>Phone: {d.phone}</p>
-                <p>Experience: {d.experience}</p>
-                <p>Patients/hour: {d.patientsPerHour}</p>
-                {d.availability?.map((a, i) => (
-                  <p key={i}>{a.day} {a.startTime}-{a.endTime}</p>
-                ))}
+              <div key={d.id} className="card" style={{ marginBottom: "10px" }}>
+                <h4>{d.name}</h4>
+                <p><b>Specialization:</b> {d.specialization}</p>
+                <p><b>Email:</b> {d.email}</p>
+                <p><b>Phone:</b> {d.phone}</p>
+                <p><b>Experience:</b> {d.experience} years</p>
+                <p><b>Patients/hour:</b> {d.patientsPerHour}</p>
+                <div>
+                  <b>Availability:</b>
+                  {d.availability?.map((a, i) => (
+                    <p key={i} style={{ margin: "2px 0" }}>{a.day} {a.startTime}-{a.endTime}</p>
+                  ))}
+                </div>
               </div>
             ))
           )}
         </div>
-      </section>
+      </div>
     </div>
   );
 };

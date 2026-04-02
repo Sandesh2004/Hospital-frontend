@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import "./styles.css";
 import Login from "./components/Login.jsx";
 import Home from "./components/Home.jsx";
 import ReceptionDashboard from "./components/ReceptionDashboard.jsx";

@@ -171,151 +171,163 @@ const Reception = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h2 style={{ margin: 0 }}>Reception - Book Appointment</h2>
-        <button onClick={handleLogout} style={{ padding: "8px 16px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>Logout</button>
+    <div className="container">
+      <div className="header">
+        <h2>Reception - Book Appointment</h2>
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
 
-      {/* 🔍 Patient Section */}
-      <h3>Patient Details</h3>
+      <div className="card">
+        <h3>Patient Details</h3>
 
-      <input
-        placeholder="Enter patient name"
-        value={patientName}
-        onChange={(e) => setPatientName(e.target.value)}
-      />
-      <br /><br />
-
-      <input
-        placeholder="Enter age"
-        type="number"
-        value={age}
-        onChange={(e) => setAge(e.target.value)}
-      />
-      <br /><br />
-
-      <input
-        placeholder="Enter phone"
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
-      <br /><br />
-
-      <input
-        placeholder="Enter email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <br /><br />
-
-      <select value={gender} onChange={(e) => setGender(e.target.value)}>
-        <option value="">Select gender</option>
-        <option value="MALE">Male</option>
-        <option value="FEMALE">Female</option>
-        <option value="OTHER">Other</option>
-      </select>
-      <br /><br />
-
-      <button onClick={searchPatients}>Search Patient</button>
-      <button onClick={createPatient}>Create New Patient</button>
-
-      {/* Patient List */}
-      {patients.length > 0 && (
-        <>
-          <h4>Select Patient</h4>
-          {patients.map(p => (
-            <div key={p.id || p._id}>
-              <p
-                style={{ cursor: "pointer" }}
-                onClick={() => setSelectedPatient(p)}
-              >
-                {p.name} ({p.id || p._id})
-              </p>
-            </div>
-          ))}
-        </>
-      )}
-
-      {selectedPatient && (
-        <div>
-          <p><b>Selected Patient:</b> {selectedPatient.name}</p>
-          <p><b>Email:</b> {selectedPatient.email || 'N/A'}</p>
-          <p><b>Gender:</b> {selectedPatient.gender || 'N/A'}</p>
-          <p><b>Phone:</b> {selectedPatient.phone || 'N/A'}</p>
+        <div className="form-group">
+          <label>Patient name</label>
+          <input
+            placeholder="Enter patient name"
+            value={patientName}
+            onChange={(e) => setPatientName(e.target.value)}
+          />
         </div>
-      )}
 
-      <hr />
+        <div className="form-group">
+          <label>Age</label>
+          <input
+            placeholder="Enter age"
+            type="number"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
+        </div>
 
-      {/* 👨‍⚕️ Doctor Section */}
-      <h3>Select Doctor</h3>
+        <div className="form-group">
+          <label>Phone</label>
+          <input
+            placeholder="Enter phone"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+        </div>
 
-      <select onChange={(e) => setSelectedDoctor(e.target.value)}>
-        <option value="">Select Doctor</option>
-        {doctors.map(d => (
-          <option key={d.id || d._id} value={d.id || d._id}>
-            {d.name} ({d.specialization})
-          </option>
-        ))}
-      </select>
+        <div className="form-group">
+          <label>Email</label>
+          <input
+            placeholder="Enter email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
 
-      {/* Availability */}
-      {selectedDoctor && (
-        <div style={{ marginTop: "10px" }}>
-          <b>Doctor Availability:</b>
-          {doctors
-            .find(d => (d.id || d._id) === selectedDoctor)
-            ?.availability?.map((a, i) => (
-              <div key={i}>
-                {a.day} ({a.startTime} - {a.endTime})
+        <div className="form-group">
+          <label>Gender</label>
+          <select value={gender} onChange={(e) => setGender(e.target.value)}>
+            <option value="">Select gender</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+
+        <button className="btn" onClick={searchPatients}>Search Patient</button>
+        <button className="btn" onClick={createPatient}>Create New Patient</button>
+
+        {patients.length > 0 && (
+          <div className="card" style={{ marginTop: "20px" }}>
+            <h4>Select Patient</h4>
+            {patients.map(p => (
+              <div key={p.id || p._id} style={{ cursor: "pointer", padding: "5px", borderBottom: "1px solid #eee" }} onClick={() => setSelectedPatient(p)}>
+                {p.name} ({p.id || p._id})
               </div>
             ))}
+          </div>
+        )}
+
+        {selectedPatient && (
+          <div className="alert alert-success">
+            <p><b>Selected Patient:</b> {selectedPatient.name}</p>
+            <p><b>Email:</b> {selectedPatient.email || 'N/A'}</p>
+            <p><b>Gender:</b> {selectedPatient.gender || 'N/A'}</p>
+            <p><b>Phone:</b> {selectedPatient.phone || 'N/A'}</p>
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h3>Select Doctor</h3>
+
+        <div className="form-group">
+          <label>Choose Doctor</label>
+          <select onChange={(e) => setSelectedDoctor(e.target.value)}>
+            <option value="">Select Doctor</option>
+            {doctors.map(d => (
+              <option key={d.id || d._id} value={d.id || d._id}>
+                {d.name} ({d.specialization})
+              </option>
+            ))}
+          </select>
         </div>
-      )}
 
-      <hr />
+        {selectedDoctor && (
+          <div className="alert alert-success">
+            <p><b>Selected Doctor:</b> {doctors.find(d => (d.id || d._id) === selectedDoctor)?.name}</p>
+            <p><b>Specialization:</b> {doctors.find(d => (d.id || d._id) === selectedDoctor)?.specialization}</p>
+            <p><b>Experience:</b> {doctors.find(d => (d.id || d._id) === selectedDoctor)?.experience} years</p>
+          </div>
+        )}
 
-      {/* 📅 Date */}
-      <h3>Choose Date</h3>
+        {selectedDoctor && (
+          <div style={{ marginTop: "10px" }}>
+            <b>Doctor Availability:</b>
+            {doctors
+              .find(d => (d.id || d._id) === selectedDoctor)
+              ?.availability?.map((a, i) => (
+                <div key={i}>
+                  {a.day} ({a.startTime} - {a.endTime})
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
 
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => {
-          const selected = e.target.value;
+      <div className="card">
+        <h3>Choose Date</h3>
 
-          const day = new Date(selected)
-            .toLocaleDateString("en-US", { weekday: "long" })
-            .toUpperCase();
+        <div className="form-group">
+          <label>Select Date</label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => {
+              const selected = e.target.value;
 
-          if (!getAvailableDays().includes(day)) {
-            alert("Doctor not available on this day");
-            return;
-          }
+              const day = new Date(selected)
+                .toLocaleDateString("en-US", { weekday: "long" })
+                .toUpperCase();
 
-          setDate(selected);
-        }}
-      />
+              if (!getAvailableDays().includes(day)) {
+                alert("Doctor not available on this day");
+                return;
+              }
 
+              setDate(selected);
+            }}
+          />
+        </div>
 
-      {/* 🔥 Remaining Slots */}
-      {remainingSlots !== null && (
-        <p>
-          <b>Remaining Slots:</b> {remainingSlots}
-        </p>
-      )}
+        {remainingSlots !== null && (
+          <p>
+            <b>Remaining Slots:</b> {remainingSlots}
+          </p>
+        )}
 
-      <br /><br />
-
-      {/* 🚀 Book Button */}
-      <button
-        onClick={bookAppointment}
-        disabled={!selectedPatient || !selectedDoctor || !date || remainingSlots === 0}
-      >
-        Book Appointment
-      </button>
+        <button
+          className="btn"
+          onClick={bookAppointment}
+          disabled={!selectedPatient || !selectedDoctor || !date || remainingSlots === 0}
+        >
+          Book Appointment
+        </button>
+      </div>
     </div>
   );
 };

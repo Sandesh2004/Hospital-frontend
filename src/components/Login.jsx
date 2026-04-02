@@ -76,35 +76,42 @@ const Login = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Login</h2>
+    <div className="container">
+      <div className="card">
+        <h2>Login</h2>
 
-      <input
-        type="text"
-        placeholder="Username"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-      />
-      <br /><br />
+        <div className="form-group">
+          <label>Username</label>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
-      <br /><br />
+        <div className="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
 
-      <select value={role} onChange={(e) => setRole(e.target.value)}>
-        <option value="">Select Role</option>
-        <option value="ADMIN">Admin</option>
-        <option value="DOCTOR">Doctor</option>
-        <option value="RECEPTIONIST">Receptionist</option>
-      </select>
+        <div className="form-group">
+          <label>Role</label>
+          <select value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="">Select Role</option>
+            <option value="ADMIN">Admin</option>
+            <option value="DOCTOR">Doctor</option>
+            <option value="RECEPTIONIST">Receptionist</option>
+          </select>
+        </div>
 
-      <br /><br />
-
-      <button onClick={handleLogin}>Login</button>
+        <button className="btn" onClick={handleLogin}>Login</button>
+      </div>
     </div>
   );
 };

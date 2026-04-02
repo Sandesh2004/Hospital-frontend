@@ -48,69 +48,64 @@ const Home = () => {
 
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <h2 style={{ margin: 0 }}>Find Doctors</h2>
-        <button onClick={handleLogout} style={{ padding: "8px 16px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>Logout</button>
+    <div className="container">
+      <div className="header">
+        <h2>Find Doctors</h2>
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
 
-      {/* 🔍 Search by Name */}
-      <input
-        type="text"
-        placeholder="Search by name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      <div className="form-group">
+        <label>Search by name</label>
+        <input
+          type="text"
+          placeholder="Search by name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
 
-      {/* 🏷️ Filter by Specialization */}
-      <select
-        value={specialization}
-        onChange={(e) => setSpecialization(e.target.value)}
-      >
-        <option value="">All Departments</option>
-        <option value="ENT">ENT</option>
-        <option value="CARDIOLOGY">Cardiology</option>
-        <option value="ORTHO">Ortho</option>
-      </select>
-
-      {/* 🔘 Search Button */}
-      <button onClick={fetchDoctors}>Search</button>
-
-      <hr />
-
-      {/* 👨‍⚕️ Doctor List */}
-      {doctors.map(doc => (
-        <div
-          key={doc.id || doc._id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            marginBottom: "10px",
-            borderRadius: "8px"
-          }}
+      <div className="form-group">
+        <label>Filter by Specialization</label>
+        <select
+          value={specialization}
+          onChange={(e) => setSpecialization(e.target.value)}
         >
-          <h3>{doc.name}</h3>
-          <p><b>Specialization:</b> {doc.specialization}</p>
-          <p><b>Email:</b> {doc.email || 'N/A'}</p>
-          <p><b>Phone:</b> {doc.phone || 'N/A'}</p>
-          <p><b>Experience:</b> {doc.experience || 'N/A'} years</p>
-          <p><b>Patients/hour:</b> {doc.patientsPerHour || 'N/A'}</p>
+          <option value="">All Departments</option>
+          <option value="ENT">ENT</option>
+          <option value="CARDIOLOGY">Cardiology</option>
+          <option value="General Medicine">General Medicine</option>
+        </select>
+      </div>
 
-          {/* 🕒 Availability */}
-          <p><b>Available:</b></p>
+      <button className="btn" onClick={fetchDoctors}>Search</button>
 
-          {doc.availability && doc.availability.length > 0 ? (
-            doc.availability.map((a, index) => (
-              <div key={index}>
-                {a.day} ({a.startTime} - {a.endTime})
-              </div>
-            ))
-          ) : (
-            <p>No availability set</p>
-          )}
-        </div>
-      ))}
+      <div style={{ marginTop: "20px" }}>
+        {doctors.map(doc => (
+          <div
+            key={doc.id || doc._id}
+            className="card"
+          >
+            <h3>{doc.name}</h3>
+            <p><b>Specialization:</b> {doc.specialization}</p>
+            <p><b>Email:</b> {doc.email || 'N/A'}</p>
+            <p><b>Phone:</b> {doc.phone || 'N/A'}</p>
+            <p><b>Experience:</b> {doc.experience || 'N/A'} years</p>
+            <p><b>Patients/hour:</b> {doc.patientsPerHour || 'N/A'}</p>
 
+            <p><b>Available:</b></p>
+
+            {doc.availability && doc.availability.length > 0 ? (
+              doc.availability.map((a, index) => (
+                <div key={index}>
+                  {a.day} ({a.startTime} - {a.endTime})
+                </div>
+              ))
+            ) : (
+              <p>No availability set</p>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

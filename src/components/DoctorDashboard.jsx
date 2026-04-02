@@ -63,31 +63,33 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+    <div className="container">
+      <div className="header">
         <h2>Doctor Dashboard</h2>
-        <button onClick={handleLogout} style={{ padding: "8px 16px", backgroundColor: "#dc3545", color: "white", border: "none", borderRadius: "4px", cursor: "pointer" }}>Logout</button>
+        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
 
       {/* 📅 Date */}
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
-
-      <br /><br />
+      <div className="form-group">
+        <label>Select Date</label>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+      </div>
 
       {/* 🔍 Search */}
-      <input
-        placeholder="Search patient"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+      <div className="form-group">
+        <label>Search Patient</label>
+        <input
+          placeholder="Search patient"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
 
-      <br /><br />
-
-      <button onClick={fetchAppointments}>Load Appointments</button>
+      <button className="btn" onClick={fetchAppointments}>Load Appointments</button>
 
       <hr />
 
@@ -96,18 +98,24 @@ const DoctorDashboard = () => {
         <p>No appointments found</p>
       ) : (
         appointments.map(app => (
-          <div key={app.id} style={{ border: "1px solid #ccc", padding: "10px", marginBottom: "10px" }}>
+          <div key={app.id} className="card">
             <h3>{app.patientName}</h3>
-            <p>Date: {app.date}</p>
-            <p>Time: {app.time || 'Not set'}</p>
-            <p>Queue: {app.queueNumber}</p>
-            <p>Status: {app.status}</p>
+            <p><b>Date:</b> {app.date}</p>
+            <p><b>Time:</b> {app.time || 'Not set'}</p>
+            <p><b>Queue:</b> {app.queueNumber}</p>
+            <p><b>Status:</b> {app.status}</p>
 
-            {app.status !== "COMPLETED" && (
-              <button onClick={() => markCompleted(app.id)}>
-                Mark Completed
-              </button>
-            )}
+            <button
+              className="btn"
+              onClick={() => markCompleted(app.id)}
+              disabled={app.status === "COMPLETED" || app.status === "CANCELLED"}
+              style={{
+                backgroundColor: app.status === "COMPLETED" || app.status === "CANCELLED" ? "#6c757d" : "#007bff",
+                cursor: app.status === "COMPLETED" || app.status === "CANCELLED" ? "not-allowed" : "pointer"
+              }}
+            >
+              {app.status === "CANCELLED" ? "Cancelled" : app.status === "COMPLETED" ? "Completed" : "Mark Completed"}
+            </button>
           </div>
         ))
       )}
