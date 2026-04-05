@@ -91,9 +91,9 @@ const Reception = () => {
 
   // 👨‍⚕️ Load Doctors
   useEffect(() => {
-    fetch("http://localhost:8080/doctors")
+    fetch("http://localhost:8080/doctors?page=0&size=100")
       .then(res => res.json())
-      .then(data => setDoctors(data || []))
+      .then(data => setDoctors(data?.content || []))
       .catch(err => console.error(err));
   }, []);
 

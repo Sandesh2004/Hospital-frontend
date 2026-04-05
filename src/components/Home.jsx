@@ -7,43 +7,56 @@ const Home = () => {
   const [doctors, setDoctors] = useState([]);
   const [name, setName] = useState("");
   const [specialization, setSpecialization] = useState("");
+  const [uniqueSpecializations, setUniqueSpecializations] = useState([]);
+  const [doctorPage, setDoctorPage] = useState(0);
+  const [doctorPageSize] = useState(10);
+  const [doctorTotalPages, setDoctorTotalPages] = useState(0);
+
+  useEffect(() => {
+    fetchAllDoctors();
+  }, []);
 
   useEffect(() => {
     fetchDoctors();
-  }, [name, specialization]);
+  }, [name, specialization, doctorPage]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("auth");
-    localStorage.removeItem("role");
-    localStorage.removeItem("doctor");
-    navigate("/login");
+  const fetchAllDoctors = () => {
+    fetch("http://localhost:8080/doctors/all")
+      .then(res => res.json())
+      .then(data => {
+        const specs = [...new Set((data || []).map(doc => doc.specialization).filter(Boolean))];
+        setUniqueSpecializations(specs.sort());
+      })
+      .catch(err => console.error(err));
   };
 
-  const fetchDoctors = () => {
-
-    let url = "http://localhost:8080/doctors?";
+  const fetchDoctors = (page = doctorPage) => {
+    let url = `http://localhost:8080/doctors?page=${page}&size=${doctorPageSize}`;
 
     if (name) {
-      url += `name=${name}&`;
+      url += `&name=${encodeURIComponent(name)}`;
     }
 
     if (specialization) {
-      url += `specialization=${specialization}`;
+      url += `&specialization=${encodeURIComponent(specialization)}`;
     }
 
     fetch(url)
-    .then(res => {
+      .then(res => {
         if (!res.ok) {
-            //return []; // handle error safely
-            throw new Error("API failed");
+          throw new Error("API failed");
         }
         return res.json();
-    })
-    .then(data => setDoctors(data || []))
-    .catch(err => {
+      })
+      .then(data => {
+        setDoctors(data?.content || []);
+        setDoctorTotalPages(data?.totalPages || 0);
+      })
+      .catch(err => {
         console.error(err);
-        setDoctors([]); // fallback
-    });
+        setDoctors([]);
+        setDoctorTotalPages(0);
+      });
   };
 
 
@@ -51,7 +64,6 @@ const Home = () => {
     <div className="container">
       <div className="header">
         <h2>Find Doctors</h2>
-        <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </div>
 
       <div className="form-group">
@@ -60,7 +72,10 @@ const Home = () => {
           type="text"
           placeholder="Search by name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            setDoctorPage(0);
+          }}
         />
       </div>
 
@@ -68,16 +83,42 @@ const Home = () => {
         <label>Filter by Specialization</label>
         <select
           value={specialization}
-          onChange={(e) => setSpecialization(e.target.value)}
+          onChange={(e) => {
+            setSpecialization(e.target.value);
+            setDoctorPage(0);
+          }}
         >
           <option value="">All Departments</option>
-          <option value="ENT">ENT</option>
-          <option value="CARDIOLOGY">Cardiology</option>
-          <option value="General Medicine">General Medicine</option>
+          {uniqueSpecializations.map((spec, index) => (
+            <option key={index} value={spec}>{spec}</option>
+          ))}
         </select>
       </div>
 
-      <button className="btn" onClick={fetchDoctors}>Search</button>
+      <button className="btn" onClick={() => {
+        setDoctorPage(0);
+        fetchDoctors(0);
+      }}>Search</button>
+
+      <div style={{ margin: "20px 0", display: "flex", alignItems: "center", gap: "10px" }}>
+        <button
+          className="btn"
+          disabled={doctorPage <= 0}
+          onClick={() => setDoctorPage(prev => Math.max(prev - 1, 0))}
+        >
+          Previous
+        </button>
+        <span>
+          Page {doctorPage + 1} of {doctorTotalPages || 1}
+        </span>
+        <button
+          className="btn"
+          disabled={doctorPage + 1 >= doctorTotalPages}
+          onClick={() => setDoctorPage(prev => prev + 1)}
+        >
+          Next
+        </button>
+      </div>
 
       <div style={{ marginTop: "20px" }}>
         {doctors.map(doc => (

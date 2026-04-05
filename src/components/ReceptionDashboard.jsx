@@ -14,40 +14,54 @@ const ReceptionDashboard = () => {
   const [doctorSearch, setDoctorSearch] = useState("");
   const [dateSearch, setDateSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [appointmentPage, setAppointmentPage] = useState(0);
+  const [appointmentPageSize] = useState(10);
+  const [appointmentTotalPages, setAppointmentTotalPages] = useState(0);
+
+  // Doctor pagination
+  const [doctorPage, setDoctorPage] = useState(0);
+  const [doctorPageSize] = useState(10);
+  const [doctorTotalPages, setDoctorTotalPages] = useState(0);
 
   const navigate = useNavigate();
   const auth = localStorage.getItem("auth");
 
   useEffect(() => {
     fetchDoctors();
-    fetchAppointments();
-  }, [name, specialization]);
+  }, [name, specialization, doctorPage]);
+
+  useEffect(() => {
+    setAppointmentPage(0);
+  }, [patientSearch, doctorSearch, dateSearch, statusFilter]);
 
   useEffect(() => {
     fetchAppointments();
-  }, [patientSearch, doctorSearch, dateSearch, statusFilter]);
+  }, [patientSearch, doctorSearch, dateSearch, statusFilter, appointmentPage]);
 
   const fetchDoctors = () => {
+    let url = `http://localhost:8080/doctors?page=${doctorPage}&size=${doctorPageSize}`;
 
-    let url = "http://localhost:8080/doctors?";
-
-    if (name) url += `name=${name}&`;
-    if (specialization) url += `specialization=${specialization}`;
+    if (name) url += `&name=${encodeURIComponent(name)}`;
+    if (specialization) url += `&specialization=${encodeURIComponent(specialization)}`;
 
     fetch(url)
       .then(res => res.json())
-      .then(data => setDoctors(data || []));
+      .then(data => {
+        setDoctors(data?.content || []);
+        setDoctorTotalPages(data?.totalPages || 0);
+      });
   };
 
   const fetchAppointments = () => {
-    fetch("http://localhost:8080/reception/appointments", {
+    fetch(`http://localhost:8080/reception/appointments?page=${appointmentPage}&size=${appointmentPageSize}`, {
       headers: {
         Authorization: "Basic " + auth,
       },
     })
       .then(res => res.json())
       .then(data => {
-        let filteredAppointments = data || [];
+        let filteredAppointments = data?.content || [];
+        setAppointmentTotalPages(data?.totalPages || 0);
 
         // Apply client-side filtering
         if (patientSearch) {
@@ -106,10 +120,6 @@ const ReceptionDashboard = () => {
     navigate("/login");
   };
 
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
-
   return (
     <div className="container">
       <div className="header">
@@ -155,6 +165,26 @@ const ReceptionDashboard = () => {
           </div>
 
           <button className="btn" onClick={fetchDoctors}>Search</button>
+
+          <div style={{ margin: "20px 0", display: "flex", alignItems: "center", gap: "10px" }}>
+            <button
+              className="btn"
+              disabled={doctorPage <= 0}
+              onClick={() => setDoctorPage(prev => Math.max(prev - 1, 0))}
+            >
+              Previous
+            </button>
+            <span>
+              Page {doctorPage + 1} of {doctorTotalPages || 1}
+            </span>
+            <button
+              className="btn"
+              disabled={doctorPage + 1 >= doctorTotalPages}
+              onClick={() => setDoctorPage(prev => prev + 1)}
+            >
+              Next
+            </button>
+          </div>
 
           <div style={{ marginTop: "20px" }}>
             {doctors.map(doc => (
@@ -206,7 +236,10 @@ const ReceptionDashboard = () => {
                   type="text"
                   placeholder="Search by patient name"
                   value={patientSearch}
-                  onChange={(e) => setPatientSearch(e.target.value)}
+                  onChange={(e) => {
+                    setPatientSearch(e.target.value);
+                    setAppointmentPage(0);
+                  }}
                 />
               </div>
 
@@ -216,7 +249,10 @@ const ReceptionDashboard = () => {
                   type="text"
                   placeholder="Search by doctor name"
                   value={doctorSearch}
-                  onChange={(e) => setDoctorSearch(e.target.value)}
+                  onChange={(e) => {
+                    setDoctorSearch(e.target.value);
+                    setAppointmentPage(0);
+                  }}
                 />
               </div>
 
@@ -225,13 +261,19 @@ const ReceptionDashboard = () => {
                 <input
                   type="date"
                   value={dateSearch}
-                  onChange={(e) => setDateSearch(e.target.value)}
+                  onChange={(e) => {
+                    setDateSearch(e.target.value);
+                    setAppointmentPage(0);
+                  }}
                 />
               </div>
 
               <div className="form-group" style={{ flex: "1", minWidth: "150px" }}>
                 <label>Status</label>
-                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                <select value={statusFilter} onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setAppointmentPage(0);
+                  }}>
                   <option value="">All Status</option>
                   <option value="BOOKED">Booked</option>
                   <option value="COMPLETED">Completed</option>
@@ -246,10 +288,23 @@ const ReceptionDashboard = () => {
                 setDoctorSearch("");
                 setDateSearch("");
                 setStatusFilter("");
+                setAppointmentPage(0);
               }}>
                 Clear Filters
               </button>
             </div>
+          </div>
+
+          <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+            <button className="btn" disabled={appointmentPage <= 0} onClick={() => setAppointmentPage(prev => Math.max(prev - 1, 0))}>
+              Previous
+            </button>
+            <span>
+              Page {appointmentPage + 1} of {appointmentTotalPages || 1}
+            </span>
+            <button className="btn" disabled={appointmentPage + 1 >= appointmentTotalPages} onClick={() => setAppointmentPage(prev => prev + 1)}>
+              Next
+            </button>
           </div>
 
           <div>

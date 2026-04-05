@@ -7,6 +7,9 @@ const DoctorDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [date, setDate] = useState("");
   const [search, setSearch] = useState("");
+  const [appointmentPage, setAppointmentPage] = useState(0);
+  const [appointmentPageSize] = useState(10);
+  const [appointmentTotalPages, setAppointmentTotalPages] = useState(0);
 
   const auth = localStorage.getItem("auth");
 
@@ -18,10 +21,10 @@ const DoctorDashboard = () => {
       return;
     }
 
-    let url = `http://localhost:8080/doctors/appointments?date=${date}`;
+    let url = `http://localhost:8080/doctors/appointments?date=${date}&page=${appointmentPage}&size=${appointmentPageSize}`;
 
     if (search) {
-      url += `&name=${search}`;
+      url += `&name=${encodeURIComponent(search)}`;
     }
 
     fetch(url, {
@@ -30,13 +33,20 @@ const DoctorDashboard = () => {
       },
     })
       .then(res => res.json())
-      .then(data => setAppointments(data || []))
+      .then(data => {
+        setAppointments(data?.content || []);
+        setAppointmentTotalPages(data?.totalPages || 0);
+      })
       .catch(err => console.error(err));
   };
 
   useEffect(() => {
-    if (date) fetchAppointments();
+    setAppointmentPage(0);
   }, [date, search]);
+
+  useEffect(() => {
+    if (date) fetchAppointments();
+  }, [date, search, appointmentPage]);
 
   // ✅ Update status
   const markCompleted = (id) => {
@@ -92,6 +102,18 @@ const DoctorDashboard = () => {
       <button className="btn" onClick={fetchAppointments}>Load Appointments</button>
 
       <hr />
+
+      <div style={{ marginBottom: "20px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <button className="btn" disabled={appointmentPage <= 0} onClick={() => setAppointmentPage(prev => Math.max(prev - 1, 0))}>
+          Previous
+        </button>
+        <span>
+          Page {appointmentPage + 1} of {appointmentTotalPages || 1}
+        </span>
+        <button className="btn" disabled={appointmentPage + 1 >= appointmentTotalPages} onClick={() => setAppointmentPage(prev => prev + 1)}>
+          Next
+        </button>
+      </div>
 
       {/* 📋 Appointments */}
       {appointments.length === 0 ? (

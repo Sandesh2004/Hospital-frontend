@@ -8,6 +8,12 @@ const AdminDashboard = () => {
 
   const [users, setUsers] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [userPage, setUserPage] = useState(0);
+  const [userPageSize] = useState(10);
+  const [userTotalPages, setUserTotalPages] = useState(0);
+  const [doctorPage, setDoctorPage] = useState(0);
+  const [doctorPageSize] = useState(10);
+  const [doctorTotalPages, setDoctorTotalPages] = useState(0);
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -19,7 +25,17 @@ const AdminDashboard = () => {
   const [experience, setExperience] = useState(0);
   const [phone, setPhone] = useState("");
   const [patientsPerHour, setPatientsPerHour] = useState(1);
-  const [availability, setAvailability] = useState("");
+
+  // Availability by day
+  const [availabilityDays, setAvailabilityDays] = useState({
+    MONDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+    TUESDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+    WEDNESDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+    THURSDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+    FRIDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+    SATURDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+    SUNDAY: { enabled: false, startTime: "09:00", endTime: "17:00" },
+  });
 
   useEffect(() => {
     if (!token || role !== "ADMIN") {
@@ -27,39 +43,55 @@ const AdminDashboard = () => {
       return;
     }
 
-    fetchUsers();
     fetchDoctors();
   }, [navigate, role, token]);
 
+  useEffect(() => {
+    if (!token || role !== "ADMIN") {
+      return;
+    }
+
+    fetchUsers();
+  }, [token, role, userPage]);
+
+  useEffect(() => {
+    if (!token || role !== "ADMIN") {
+      return;
+    }
+
+    fetchDoctors();
+  }, [token, role, doctorPage]);
+
   const fetchUsers = async () => {
-    const res = await fetch("http://localhost:8080/admin/users", {
+    const res = await fetch(`http://localhost:8080/admin/users?page=${userPage}&size=${userPageSize}`, {
       headers: { Authorization: "Basic " + token },
     });
     if (res.ok) {
       const data = await res.json();
-      setUsers(data || []);
+      setUsers(data?.content || []);
+      setUserTotalPages(data?.totalPages || 0);
     }
   };
 
   const fetchDoctors = async () => {
-    const res = await fetch("http://localhost:8080/doctors/all", {
+    const res = await fetch(`http://localhost:8080/doctors?page=${doctorPage}&size=${doctorPageSize}`, {
       headers: { Authorization: "Basic " + token },
     });
     if (res.ok) {
       const data = await res.json();
-      setDoctors(data || []);
+      setDoctors(data?.content || []);
+      setDoctorTotalPages(data?.totalPages || 0);
     }
   };
 
   const getAvailabilityList = () => {
-    return availability
-      .split(";")
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .map((item) => {
-        const [day, startTime, endTime] = item.split(",").map((s) => s.trim());
-        return { day, startTime, endTime };
-      });
+    return Object.entries(availabilityDays)
+      .filter(([day, times]) => times.enabled && times.startTime && times.endTime)
+      .map(([day, times]) => ({
+        day,
+        startTime: times.startTime,
+        endTime: times.endTime,
+      }));
   };
 
   const createUser = async () => {
@@ -75,8 +107,14 @@ const AdminDashboard = () => {
     };
 
     if (newRole === "DOCTOR") {
-      if (!name || !email || !specialization || !experience || !phone || !availability) {
+      if (!name || !email || !specialization || !experience || !phone) {
         alert("Doctor fields are required for role DOCTOR");
+        return;
+      }
+
+      const availList = getAvailabilityList();
+      if (availList.length === 0) {
+        alert("Please add at least one availability slot");
         return;
       }
 
@@ -86,7 +124,7 @@ const AdminDashboard = () => {
       body.experience = Number(experience);
       body.phone = phone;
       body.patientsPerHour = Number(patientsPerHour);
-      body.availability = getAvailabilityList();
+      body.availability = availList;
     }
 
     const res = await fetch("http://localhost:8080/admin/create-user", {
@@ -110,7 +148,15 @@ const AdminDashboard = () => {
       setExperience(0);
       setPhone("");
       setPatientsPerHour(1);
-      setAvailability("");
+      setAvailabilityDays({
+        MONDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+        TUESDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+        WEDNESDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+        THURSDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+        FRIDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+        SATURDAY: { enabled: true, startTime: "09:00", endTime: "17:00" },
+        SUNDAY: { enabled: false, startTime: "09:00", endTime: "17:00" },
+      });
       fetchUsers();
       fetchDoctors();
     } else {
@@ -214,13 +260,54 @@ const AdminDashboard = () => {
             </div>
 
             <div className="form-group">
-              <label>Availability</label>
-              <textarea
-                value={availability}
-                onChange={(e) => setAvailability(e.target.value)}
-                placeholder="Availability entries: MONDAY,09:00,17:00; TUESDAY,09:00,17:00"
-                rows={3}
-              />
+              <label>Availability Schedule</label>
+              <div style={{ backgroundColor: "#f8f9fa", padding: "15px", borderRadius: "6px" }}>
+                <p style={{ marginTop: "0", marginBottom: "15px", fontWeight: "bold" }}>Set working hours for each day (uncheck to mark unavailable):</p>
+                {Object.entries(availabilityDays).map(([day, times]) => (
+                  <div key={day} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px", padding: "10px", backgroundColor: "white", borderRadius: "4px", border: "1px solid #ddd" }}>
+                    <input
+                      type="checkbox"
+                      checked={times.enabled}
+                      onChange={(e) =>
+                        setAvailabilityDays({
+                          ...availabilityDays,
+                          [day]: { ...times, enabled: e.target.checked },
+                        })
+                      }
+                      style={{ cursor: "pointer", width: "18px", height: "18px" }}
+                    />
+                    <label style={{ fontWeight: "500", minWidth: "100px", cursor: "pointer" }}>
+                      {day.charAt(0) + day.slice(1).toLowerCase()}
+                    </label>
+                    <input
+                      type="time"
+                      value={times.startTime}
+                      onChange={(e) =>
+                        setAvailabilityDays({
+                          ...availabilityDays,
+                          [day]: { ...times, startTime: e.target.value },
+                        })
+                      }
+                      disabled={!times.enabled}
+                      style={{ cursor: times.enabled ? "pointer" : "not-allowed", opacity: times.enabled ? 1 : 0.5 }}
+                    />
+                    <span>to</span>
+                    <input
+                      type="time"
+                      value={times.endTime}
+                      onChange={(e) =>
+                        setAvailabilityDays({
+                          ...availabilityDays,
+                          [day]: { ...times, endTime: e.target.value },
+                        })
+                      }
+                      disabled={!times.enabled}
+                      style={{ cursor: times.enabled ? "pointer" : "not-allowed", opacity: times.enabled ? 1 : 0.5 }}
+                    />
+                  </div>
+                ))}
+                <p style={{ fontSize: "12px", color: "#6c757d", margin: "10px 0 0 0" }}>✓ Check days when doctor is available</p>
+              </div>
             </div>
           </>
         )}
@@ -230,6 +317,17 @@ const AdminDashboard = () => {
 
       <div className="card">
         <h3>Users</h3>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+          <button className="btn" disabled={userPage <= 0} onClick={() => setUserPage(prev => Math.max(prev - 1, 0))}>
+            Previous
+          </button>
+          <span>
+            Page {userPage + 1} of {userTotalPages || 1}
+          </span>
+          <button className="btn" disabled={userPage + 1 >= userTotalPages} onClick={() => setUserPage(prev => prev + 1)}>
+            Next
+          </button>
+        </div>
         <div>
           {users.map((u) => (
             <div key={u.id} className="card" style={{ marginBottom: "10px" }}>
@@ -244,6 +342,17 @@ const AdminDashboard = () => {
 
       <div className="card">
         <h3>Doctors</h3>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+          <button className="btn" disabled={doctorPage <= 0} onClick={() => setDoctorPage(prev => Math.max(prev - 1, 0))}>
+            Previous
+          </button>
+          <span>
+            Page {doctorPage + 1} of {doctorTotalPages || 1}
+          </span>
+          <button className="btn" disabled={doctorPage + 1 >= doctorTotalPages} onClick={() => setDoctorPage(prev => prev + 1)}>
+            Next
+          </button>
+        </div>
         <div>
           {doctors.length === 0 ? (
             <p>No doctors available</p>
@@ -257,10 +366,22 @@ const AdminDashboard = () => {
                 <p><b>Experience:</b> {d.experience} years</p>
                 <p><b>Patients/hour:</b> {d.patientsPerHour}</p>
                 <div>
-                  <b>Availability:</b>
-                  {d.availability?.map((a, i) => (
-                    <p key={i} style={{ margin: "2px 0" }}>{a.day} {a.startTime}-{a.endTime}</p>
-                  ))}
+                  <b style={{ display: "block", marginBottom: "8px" }}>📅 Availability:</b>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "8px" }}>
+                    {d.availability?.map((a, i) => (
+                      <div key={i} style={{
+                        backgroundColor: "#e7f3ff",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: "1px solid #b8daff",
+                        textAlign: "center",
+                        fontSize: "13px"
+                      }}>
+                        <div style={{ fontWeight: "bold", color: "#0056b3" }}>{a.day.charAt(0) + a.day.slice(1).toLowerCase()}</div>
+                        <div style={{ color: "#495057" }}>🕐 {a.startTime} - {a.endTime}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))
